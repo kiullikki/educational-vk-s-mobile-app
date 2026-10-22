@@ -4,4 +4,20 @@
     <string name="tab_all_apps">Все приложения</string>
     <string name="favorites">Избранное</string>
     <string name="favorites_empty">В избранном пока пусто</string>
+    <string name="showcase_title">Витрина</string>
+    <string name="install">Установить</string>
+    <string name="app_details_description">Описание</string>
+    <string name="app_details_read_more">Читать далее</string>
+    <string name="read_less">Свернуть</string>
+    <string name="app_details_developer">Разработчик</string>
+    <string name="app_details_age">Возраст</string>
+    <string name="app_details_size">Размер</string>
+    <string name="app_details_screenshots">Скриншоты</string>
+    <string name="under_development">Функция в разработке</string>
+    <string name="back">Назад</string>
+    <string name="share">Поделиться</string>
+    <string name="share_app_text">Смотри, что нашла: %1$s — %2$s</string>
+    <string name="share_failed">Не удалось поделиться</string>
+    <string name="add_to_favorites">Добавить в избранное</string>
+    <string name="remove_from_favorites">Убрать из избранного</string>
 </resources>

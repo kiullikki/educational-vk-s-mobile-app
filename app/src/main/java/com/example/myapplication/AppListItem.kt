@@ -1,7 +1,6 @@
 package com.example.myapplication
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,31 +22,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.data.AppItem
 
 @Composable
-fun AppListItem(app: AppItem, isFavorite: Boolean, onClick: () -> Unit, onFavoriteClick: () -> Unit) {
+fun AppListItem(
+    app: AppItem,
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
             .padding(vertical = 8.dp, horizontal = 8.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier.size(48.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(app.iconRes),
-                contentDescription = app.name,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(40.dp)
-            )
-        }
+        Icon(
+            painter = painterResource(app.iconRes),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier
+                .size(48.dp)
+                .padding(4.dp)
+        )
 
         Spacer(Modifier.width(12.dp))
 
@@ -75,7 +78,9 @@ fun AppListItem(app: AppItem, isFavorite: Boolean, onClick: () -> Unit, onFavori
         IconButton(onClick = onFavoriteClick) {
             Icon(
                 imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                contentDescription = null,
+                contentDescription = stringResource(
+                    if (isFavorite) R.string.remove_from_favorites else R.string.add_to_favorites
+                ),
                 tint = if (isFavorite) MaterialTheme.colorScheme.error
                 else MaterialTheme.colorScheme.onSurfaceVariant
             )

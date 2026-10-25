@@ -6,12 +6,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -28,13 +33,13 @@ import ru.itmo.storemini.R
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import ru.itmo.storemini.domain.appdetails.AppItem
-import ru.itmo.storemini.data.appdetails.mockAllApps
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppDetailsScreen(
     app: AppItem,
-    isFavorite: (Int) -> Boolean,
+    showcaseApps: List<AppItem>,
     onFavoriteClick: (Int) -> Unit,
     onBackClick: () -> Unit,
     onShowcaseAppClick: (AppItem) -> Unit,
@@ -62,62 +67,81 @@ fun AppDetailsScreen(
         }
     }
 
-    Box(modifier.fillMaxSize().safeDrawingPadding()) {
-        Column(Modifier.fillMaxSize()) {
-            Toolbar(
-                onBackClick = onBackClick,
-                onShareClick = shareApp,
-            )
-            Column(
-                Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Spacer(Modifier.height(8.dp))
-                AppDetailsHeader(app, Modifier.padding(horizontal = 16.dp))
-                Spacer(Modifier.height(16.dp))
-                InstallButton(
-                    onClick = showUnderDevelopment,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
-                Spacer(Modifier.height(12.dp))
-                ScreenshotsList(app)
-                Spacer(Modifier.height(12.dp))
-                AppDescription(
-                    description = app.fullDescription,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
-                Spacer(Modifier.height(12.dp))
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                )
-                Spacer(Modifier.height(12.dp))
-                Developer(
-                    name = app.developer,
-                    onClick = showUnderDevelopment,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp),
-                )
-                Spacer(Modifier.height(12.dp))
-            }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+    BottomSheetScaffold(
+        scaffoldState = rememberBottomSheetScaffoldState(),
+        sheetPeekHeight = 32.dp,
+        sheetContainerColor = MaterialTheme.colorScheme.surface,
+        sheetTonalElevation = 8.dp,
+        sheetContent = {
             ShowcaseApps(
-                currentApp = app,
-                isFavorite = isFavorite,
+                apps = showcaseApps,
                 onFavoriteClick = onFavoriteClick,
                 onAppClick = onShowcaseAppClick,
             )
+        },
+        modifier = modifier
+            .fillMaxSize()
+            .navigationBarsPadding(),
+    ) { innerPadding ->
+        Box(
+            Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(innerPadding)
+        ) {
+            Column(Modifier.fillMaxSize()) {
+                Toolbar(
+                    onBackClick = onBackClick,
+                    onShareClick = shareApp,
+                )
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Spacer(Modifier.height(8.dp))
+                    AppDetailsHeader(
+                        app = app,
+                        onFavoriteClick = { onFavoriteClick(app.id) },
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    InstallButton(
+                        onClick = showUnderDevelopment,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    ScreenshotsList(app)
+                    Spacer(Modifier.height(12.dp))
+                    AppDescription(
+                        description = app.fullDescription,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Developer(
+                        name = app.developer,
+                        onClick = showUnderDevelopment,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                }
+            }
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
         }
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter),
-        )
     }
 }
 
@@ -126,8 +150,19 @@ fun AppDetailsScreen(
 private fun AppDetailsScreenPreview() {
     AppTheme {
         AppDetailsScreen(
-            app = mockAllApps.first(),
-            isFavorite = { true },
+            app = AppItem(
+                iconRes = R.drawable.ic_tech_kotlin,
+                name = "Kotlin",
+                description = "Основной язык Android-разработки",
+                fullDescription = "Статически типизирован, полностью совместим с Java.",
+                category = "Языки",
+                id = 1,
+                isFavorite = true,
+                developer = "JetBrains",
+                ageRating = 0,
+                sizeMb = 95.4f,
+            ),
+            showcaseApps = emptyList(),
             onFavoriteClick = {},
             onBackClick = {},
             onShowcaseAppClick = {},

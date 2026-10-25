@@ -10,10 +10,6 @@ sealed interface AppListState {
 
     data class Content(
         val apps: List<AppItem>,
-        val favoriteIds: Set<Int>,
         val favoritesOnly: Boolean = false,
-    ) : AppListState {
-        val visibleApps: List<AppItem>
-            get() = if (favoritesOnly) apps.filter { it.id in favoriteIds } else apps
-    }
+    ) : AppListState
 }

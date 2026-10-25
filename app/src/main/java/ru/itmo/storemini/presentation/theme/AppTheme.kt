@@ -1,4 +1,4 @@
-package com.example.myapplication
+package ru.itmo.storemini.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

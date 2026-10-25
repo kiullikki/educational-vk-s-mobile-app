@@ -1,8 +1,9 @@
-package com.example.myapplication
+package ru.itmo.storemini.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import ru.itmo.storemini.presentation.theme.AppTheme
 import androidx.activity.enableEdgeToEdge
 class MainActivity : ComponentActivity() {
 
@@ -11,7 +12,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppTheme {
-                MainScreen()
+                AppNavigation()
             }
         }
     }

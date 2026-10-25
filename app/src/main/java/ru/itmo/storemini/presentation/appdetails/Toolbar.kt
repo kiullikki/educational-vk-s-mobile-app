@@ -1,4 +1,4 @@
-package com.example.myapplication.appdetails
+package ru.itmo.storemini.presentation.appdetails
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -12,7 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.example.myapplication.R
+import ru.itmo.storemini.R
 
 @Composable
 fun Toolbar(

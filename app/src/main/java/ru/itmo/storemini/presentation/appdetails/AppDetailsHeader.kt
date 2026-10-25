@@ -1,4 +1,4 @@
-package com.example.myapplication.appdetails
+package ru.itmo.storemini.presentation.appdetails
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -25,8 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.R
-import com.example.myapplication.data.AppItem
+import ru.itmo.storemini.R
+import ru.itmo.storemini.domain.appdetails.AppItem
 import kotlin.math.roundToInt
 
 @Composable

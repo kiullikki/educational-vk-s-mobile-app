@@ -1,4 +1,4 @@
-package com.example.myapplication.appdetails
+package ru.itmo.storemini.presentation.appdetails
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.example.myapplication.R
+import ru.itmo.storemini.R
 
 @Composable
 fun Developer(name: String, onClick: () -> Unit, modifier: Modifier = Modifier) {

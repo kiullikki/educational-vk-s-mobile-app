@@ -13,6 +13,8 @@
     <string name="app_details_developer">Разработчик</string>
     <string name="app_details_age">Возраст</string>
     <string name="app_details_size">Размер</string>
+    <string name="age_rating_value">%1$d+</string>
+    <string name="size_mb_value">%1$d MB</string>
     <string name="app_details_screenshots">Скриншоты</string>
     <string name="under_development">Функция в разработке</string>
     <string name="back">Назад</string>

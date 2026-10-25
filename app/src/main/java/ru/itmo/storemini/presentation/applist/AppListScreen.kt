@@ -37,7 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.itmo.storemini.R
-import ru.itmo.storemini.data.appdetails.FakeAppApi
+import ru.itmo.storemini.data.AppRepositoryImpl
 import ru.itmo.storemini.domain.appdetails.AppItem
 import ru.itmo.storemini.presentation.theme.AppTheme
 import kotlinx.coroutines.flow.Flow
@@ -118,7 +118,7 @@ fun AppListScreen(
                         )
                     }
 
-                    if (currentState.visibleApps.isEmpty()) {
+                    if (currentState.apps.isEmpty()) {
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -139,10 +139,10 @@ fun AppListScreen(
                                 .padding(horizontal = 24.dp),
                             contentPadding = PaddingValues(vertical = 8.dp)
                         ) {
-                            items(currentState.visibleApps, key = { it.id }) { app ->
+                            items(currentState.apps, key = { it.id }) { app ->
                                 AppListItem(
                                     app = app,
-                                    isFavorite = app.id in currentState.favoriteIds,
+                                    isFavorite = app.isFavorite,
                                     onClick = { onAppClick(app) },
                                     onFavoriteClick = { viewModel.onFavoriteClick(app.id) }
                                 )
@@ -165,10 +165,12 @@ private fun ObserveEvents(
     snackbarHostState: SnackbarHostState,
 ) {
     val underDevelopment = stringResource(R.string.under_development)
+    val loadError = stringResource(R.string.load_error)
     LaunchedEffect(Unit) {
         events.collect { event ->
             when (event) {
                 AppListEvent.UnderDevelopment -> snackbarHostState.showSnackbar(underDevelopment)
+                AppListEvent.Error -> snackbarHostState.showSnackbar(loadError)
             }
         }
     }
@@ -180,7 +182,7 @@ private fun AppListScreenPreview() {
     AppTheme {
         AppListScreen(
             viewModel = AppListViewModel(
-                FakeAppApi()
+                AppRepositoryImpl()
             ),
             onAppClick = {},
         )

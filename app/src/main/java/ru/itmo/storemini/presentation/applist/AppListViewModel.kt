@@ -10,11 +10,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.itmo.storemini.domain.appdetails.AppApi
+import ru.itmo.storemini.domain.applist.AppRepository
 
-// TODO: заменить AppApi на AppRepository, когда появятся сеть/БД/маппинг DTO
 class AppListViewModel(
-    private val api: AppApi,
+    private val repository: AppRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<AppListState>(AppListState.Loading)
@@ -32,11 +31,9 @@ class AppListViewModel(
             val current = _state.value as? AppListState.Content
             _state.value = AppListState.Loading
             try {
-                val apps = api.getApps()
+                val apps = repository.getApps()
                 _state.value = AppListState.Content(
                     apps = apps,
-                    favoriteIds = current?.favoriteIds
-                        ?: apps.filter { it.isFavorite }.map { it.id }.toSet(),
                     favoritesOnly = current?.favoritesOnly ?: false,
                 )
             } catch (e: CancellationException) {
@@ -47,6 +44,17 @@ class AppListViewModel(
         }
     }
 
+    suspend fun getAppById(appId: Int) = repository.getAppById(appId)
+
+    suspend fun getShowcaseApps(appId: Int) = repository.getShowcaseApps(appId)
+
+    suspend fun toggleFavorite(appId: Int) {
+        repository.toggleFavorite(appId)
+        val favoritesOnly = (_state.value as? AppListState.Content)?.favoritesOnly ?: false
+        val apps = if (favoritesOnly) repository.getFavoriteApps() else repository.getApps()
+        _state.update { (it as? AppListState.Content)?.copy(apps = apps) ?: it }
+    }
+
     fun onLogoClick() {
         viewModelScope.launch {
             _events.send(AppListEvent.UnderDevelopment)
@@ -54,25 +62,30 @@ class AppListViewModel(
     }
 
     fun onTabSelected(favoritesOnly: Boolean) {
-        _state.update { currentState ->
-            if (currentState is AppListState.Content) {
-                currentState.copy(favoritesOnly = favoritesOnly)
-            } else {
-                currentState
+        viewModelScope.launch {
+            try {
+                val apps = if (favoritesOnly) repository.getFavoriteApps() else repository.getApps()
+                _state.update { currentState ->
+                    (currentState as? AppListState.Content)
+                        ?.copy(apps = apps, favoritesOnly = favoritesOnly)
+                        ?: currentState
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _events.send(AppListEvent.Error)
             }
         }
     }
 
     fun onFavoriteClick(appId: Int) {
-        _state.update { currentState ->
-            if (currentState is AppListState.Content) {
-                val favoriteIds = currentState.favoriteIds
-                currentState.copy(
-                    favoriteIds = if (appId in favoriteIds) favoriteIds - appId
-                    else favoriteIds + appId
-                )
-            } else {
-                currentState
+        viewModelScope.launch {
+            try {
+                toggleFavorite(appId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _events.send(AppListEvent.Error)
             }
         }
     }

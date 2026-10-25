@@ -16,19 +16,17 @@ import androidx.compose.ui.unit.dp
 import ru.itmo.storemini.presentation.applist.AppListItem
 import ru.itmo.storemini.R
 import ru.itmo.storemini.domain.appdetails.AppItem
-import ru.itmo.storemini.data.appdetails.showcasePagesFor
 
 private val PAGE_HEIGHT = 200.dp
 
 @Composable
 fun ShowcaseApps(
-    currentApp: AppItem,
-    isFavorite: (Int) -> Boolean,
+    apps: List<AppItem>,
     onFavoriteClick: (Int) -> Unit,
     onAppClick: (AppItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val showcasePages = remember(currentApp.id) { showcasePagesFor(currentApp.id) }
+    val showcasePages = remember(apps) { apps.chunked(3) }
 
     Column(modifier.fillMaxWidth()) {
         Text(
@@ -44,7 +42,7 @@ fun ShowcaseApps(
                 showcasePages[page].forEach { item ->
                     AppListItem(
                         app = item,
-                        isFavorite = isFavorite(item.id),
+                        isFavorite = item.isFavorite,
                         onClick = { onAppClick(item) },
                         onFavoriteClick = { onFavoriteClick(item.id) },
                     )

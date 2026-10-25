@@ -1,4 +1,4 @@
-package com.example.myapplication.appdetails
+package ru.itmo.storemini.presentation.appdetails
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.R
+import ru.itmo.storemini.R
 
 @Composable
 fun InstallButton(onClick: () -> Unit, modifier: Modifier = Modifier) {

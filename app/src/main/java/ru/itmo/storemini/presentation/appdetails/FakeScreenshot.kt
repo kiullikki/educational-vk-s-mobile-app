@@ -1,4 +1,4 @@
-package com.example.myapplication.appdetails
+package ru.itmo.storemini.presentation.appdetails
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.data.AppItem
+import ru.itmo.storemini.domain.appdetails.AppItem
 
 @Composable
 fun FakeScreenshot(app: AppItem, variant: Int) {

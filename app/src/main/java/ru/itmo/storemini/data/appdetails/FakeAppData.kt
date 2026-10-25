@@ -1,20 +1,8 @@
-package com.example.myapplication.data
+package ru.itmo.storemini.data.appdetails
 
-import androidx.annotation.DrawableRes
-import com.example.myapplication.R
+import ru.itmo.storemini.R
+import ru.itmo.storemini.domain.appdetails.AppItem
 
-data class AppItem(
-    @param:DrawableRes val iconRes: Int,
-    val name: String,
-    val description: String,
-    val fullDescription: String,
-    val category: String,
-    val id: Int,
-    val isFavorite: Boolean,
-    val developer: String,
-    val ageRating: Int,
-    val sizeMb: Float,
-)
 
 val mockAllApps: List<AppItem> = listOf(
     AppItem(R.drawable.ic_tech_kotlin, "Kotlin", "Основной язык Android-разработки", "Статически типизирован, полностью совместим с Java, поддерживает корутины для асинхронного кода и лаконичный синтаксис для всего — от data-классов до DSL. С 2019 года Google официально рекомендует его как предпочтительный язык для Android.", "Языки", id = 1, isFavorite = true, developer = "JetBrains", ageRating = 0, sizeMb = 95.4f),
@@ -48,3 +36,10 @@ val mockAllApps: List<AppItem> = listOf(
 val mockFavoriteApps: List<AppItem> = mockAllApps.filter { it.isFavorite }
 
 val mockShowcaseApps: List<AppItem> = mockAllApps.filter { it.id in setOf(2, 7, 8, 10, 12, 14, 15, 20, 23) }
+
+fun showcasePagesFor(currentAppId: Int): List<List<AppItem>> =
+    (mockShowcaseApps + mockAllApps)
+        .distinctBy { it.id }
+        .filter { it.id != currentAppId }
+        .take(9)
+        .chunked(3)

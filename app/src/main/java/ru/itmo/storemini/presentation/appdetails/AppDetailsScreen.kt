@@ -1,4 +1,4 @@
-package com.example.myapplication.appdetails
+package ru.itmo.storemini.presentation.appdetails
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,12 +23,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.AppTheme
-import com.example.myapplication.R
+import ru.itmo.storemini.presentation.theme.AppTheme
+import ru.itmo.storemini.R
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import com.example.myapplication.data.AppItem
-import com.example.myapplication.data.mockAllApps
+import ru.itmo.storemini.domain.appdetails.AppItem
+import ru.itmo.storemini.data.appdetails.mockAllApps
 import kotlinx.coroutines.launch
 
 @Composable

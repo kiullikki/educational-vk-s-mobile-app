@@ -1,19 +1,22 @@
-package com.example.myapplication
+package ru.itmo.storemini.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.myapplication.appdetails.AppDetailsScreen
-import com.example.myapplication.data.mockAllApps
-import com.example.myapplication.data.mockFavoriteApps
+import ru.itmo.storemini.di.AppModule
+import ru.itmo.storemini.presentation.appdetails.AppDetailsScreen
+import ru.itmo.storemini.presentation.applist.AppListScreen
+import ru.itmo.storemini.presentation.applist.AppListState
+import ru.itmo.storemini.presentation.applist.AppListViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -23,34 +26,28 @@ object AppListRoute
 data class AppDetailsRoute(val appId: Int)
 
 @Composable
-fun MainScreen() {
+fun AppNavigation() {
     val navController = rememberNavController()
-
-    var favoriteIds by rememberSaveable {
-        mutableStateOf(mockFavoriteApps.map { it.id }.toSet())
-    }
-    val toggleFavorite = remember {
-        { id: Int ->
-            favoriteIds = if (id in favoriteIds) favoriteIds - id else favoriteIds + id
-        }
-    }
+    val listViewModel: AppListViewModel = viewModel(factory = AppModule.appListViewModelFactory)
+    val listState by listViewModel.state.collectAsStateWithLifecycle()
+    var lastFavoriteIds by remember { mutableStateOf(emptySet<Int>()) }
+    (listState as? AppListState.Content)?.let { lastFavoriteIds = it.favoriteIds }
 
     NavHost(navController = navController, startDestination = AppListRoute) {
         composable<AppListRoute> {
             AppListScreen(
-                isFavorite = favoriteIds::contains,
-                onFavoriteClick = toggleFavorite,
+                viewModel = listViewModel,
                 onAppClick = { navController.navigate(AppDetailsRoute(it.id)) },
             )
         }
         composable<AppDetailsRoute> { backStackEntry ->
             val appId = backStackEntry.toRoute<AppDetailsRoute>().appId
-            val app = mockAllApps.find { it.id == appId }
+            val app = (listState as? AppListState.Content)?.apps?.find { it.id == appId }
             if (app != null) {
                 AppDetailsScreen(
                     app = app,
-                    isFavorite = favoriteIds::contains,
-                    onFavoriteClick = toggleFavorite,
+                    isFavorite = lastFavoriteIds::contains,
+                    onFavoriteClick = listViewModel::onFavoriteClick,
                     onBackClick = { navController.popBackStack() },
                     onShowcaseAppClick = {
                         navController.navigate(AppDetailsRoute(it.id))

@@ -1,4 +1,4 @@
-package com.example.myapplication.appdetails
+package ru.itmo.storemini.presentation.appdetails
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,14 +13,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.AppListItem
-import com.example.myapplication.R
-import com.example.myapplication.data.AppItem
-import com.example.myapplication.data.mockAllApps
-import com.example.myapplication.data.mockShowcaseApps
+import ru.itmo.storemini.presentation.applist.AppListItem
+import ru.itmo.storemini.R
+import ru.itmo.storemini.domain.appdetails.AppItem
+import ru.itmo.storemini.data.appdetails.showcasePagesFor
 
-private const val APPS_PER_PAGE = 3
-private const val PAGES_COUNT = 3
 private val PAGE_HEIGHT = 200.dp
 
 @Composable
@@ -31,13 +28,7 @@ fun ShowcaseApps(
     onAppClick: (AppItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val showcasePages = remember(currentApp.id) {
-        (mockShowcaseApps + mockAllApps)
-            .distinctBy { it.id }
-            .filter { it.id != currentApp.id }
-            .take(APPS_PER_PAGE * PAGES_COUNT)
-            .chunked(APPS_PER_PAGE)
-    }
+    val showcasePages = remember(currentApp.id) { showcasePagesFor(currentApp.id) }
 
     Column(modifier.fillMaxWidth()) {
         Text(

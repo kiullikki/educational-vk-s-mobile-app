@@ -37,7 +37,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.itmo.storemini.R
-import ru.itmo.storemini.data.AppRepositoryImpl
+import ru.itmo.storemini.data.AppListRepositoryImpl
+import ru.itmo.storemini.data.AppsLocalDataSource
+import ru.itmo.storemini.data.FavoritesRepositoryImpl
 import ru.itmo.storemini.domain.appdetails.AppItem
 import ru.itmo.storemini.presentation.theme.AppTheme
 import kotlinx.coroutines.flow.Flow
@@ -180,9 +182,11 @@ private fun ObserveEvents(
 @Composable
 private fun AppListScreenPreview() {
     AppTheme {
+        val dataSource = remember { AppsLocalDataSource() }
         AppListScreen(
             viewModel = AppListViewModel(
-                AppRepositoryImpl()
+                appListRepository = AppListRepositoryImpl(dataSource),
+                favoritesRepository = FavoritesRepositoryImpl(dataSource),
             ),
             onAppClick = {},
         )

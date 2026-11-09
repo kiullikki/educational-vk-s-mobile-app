@@ -24,20 +24,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.itmo.storemini.R
-import ru.itmo.storemini.domain.appdetails.AppItem
+import ru.itmo.storemini.domain.appdetails.AppDetails
+import ru.itmo.storemini.presentation.AppIcon
 import kotlin.math.roundToInt
 
 @Composable
 fun AppDetailsHeader(
-    app: AppItem,
+    app: AppDetails,
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -49,11 +48,12 @@ fun AppDetailsHeader(
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest),
         ) {
-            Icon(
-                painter = painterResource(app.iconRes),
+            AppIcon(
+                iconUrl = app.iconUrl,
                 contentDescription = app.name,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(80.dp),
+                modifier = Modifier
+                    .size(104.dp)
+                    .clip(RoundedCornerShape(12.dp)),
             )
             Box(
                 contentAlignment = Alignment.Center,

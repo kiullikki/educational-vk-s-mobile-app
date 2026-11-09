@@ -33,7 +33,8 @@ import ru.itmo.storemini.presentation.theme.AppTheme
 import ru.itmo.storemini.R
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import ru.itmo.storemini.domain.appdetails.AppItem
+import ru.itmo.storemini.domain.appdetails.AppDetails
+import ru.itmo.storemini.domain.catalog.AppSummary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
@@ -41,12 +42,13 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppDetailsScreen(
-    app: AppItem,
-    showcaseApps: List<AppItem>,
+    app: AppDetails,
+    showcaseApps: List<AppSummary>,
+    showcaseError: Boolean,
     events: Flow<AppDetailsEvent>,
-    onFavoriteClick: (Int) -> Unit,
+    onFavoriteClick: (String) -> Unit,
     onBackClick: () -> Unit,
-    onShowcaseAppClick: (AppItem) -> Unit,
+    onShowcaseAppClick: (AppSummary) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -66,7 +68,7 @@ fun AppDetailsScreen(
     }
 
     val context = LocalContext.current
-    val shareText = stringResource(R.string.share_app_text, app.name, app.description)
+    val shareText = stringResource(R.string.share_app_text, app.name, app.description.take(120))
     val shareFailed = stringResource(R.string.share_failed)
     val shareApp: () -> Unit = {
         try {
@@ -88,6 +90,7 @@ fun AppDetailsScreen(
         sheetContent = {
             ShowcaseApps(
                 apps = showcaseApps,
+                hasError = showcaseError,
                 onFavoriteClick = onFavoriteClick,
                 onAppClick = onShowcaseAppClick,
             )
@@ -129,7 +132,7 @@ fun AppDetailsScreen(
                     ScreenshotsList(app)
                     Spacer(Modifier.height(12.dp))
                     AppDescription(
-                        description = app.fullDescription,
+                        description = app.description,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
@@ -163,19 +166,20 @@ fun AppDetailsScreen(
 private fun AppDetailsScreenPreview() {
     AppTheme {
         AppDetailsScreen(
-            app = AppItem(
-                iconRes = R.drawable.ic_tech_kotlin,
+            app = AppDetails(
+                iconUrl = "",
                 name = "Kotlin",
-                description = "Основной язык Android-разработки",
-                fullDescription = "Статически типизирован, полностью совместим с Java.",
+                description = "Статически типизирован, полностью совместим с Java.",
                 category = "Языки",
-                id = 1,
+                id = "preview",
                 isFavorite = true,
                 developer = "JetBrains",
                 ageRating = 0,
                 sizeMb = 95.4f,
+                screenshotUrls = emptyList(),
             ),
             showcaseApps = emptyList(),
+            showcaseError = false,
             events = emptyFlow(),
             onFavoriteClick = {},
             onBackClick = {},

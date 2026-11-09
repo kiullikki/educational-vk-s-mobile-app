@@ -13,20 +13,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import ru.itmo.storemini.domain.appdetails.AppItem
+import ru.itmo.storemini.domain.appdetails.AppDetails
+import ru.itmo.storemini.presentation.AppIcon
 
 @Composable
-fun FakeScreenshot(app: AppItem, variant: Int) {
+fun FakeScreenshot(app: AppDetails, variant: Int) {
     val (background, foreground) = with(MaterialTheme.colorScheme) {
         listOf(
             surfaceContainerHighest to onSurfaceVariant,
@@ -44,11 +43,12 @@ fun FakeScreenshot(app: AppItem, variant: Int) {
             .padding(12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painter = painterResource(app.iconRes),
+            AppIcon(
+                iconUrl = app.iconUrl,
                 contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier
+                    .size(20.dp)
+                    .clip(RoundedCornerShape(4.dp)),
             )
             Spacer(Modifier.width(8.dp))
             SkeletonBar(width = 96.dp, height = 8.dp, color = foreground)
@@ -61,11 +61,12 @@ fun FakeScreenshot(app: AppItem, variant: Int) {
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             if (variant != 1) {
-                Icon(
-                    painter = painterResource(app.iconRes),
+                AppIcon(
+                    iconUrl = app.iconUrl,
                     contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(if (variant == 2) 56.dp else 40.dp),
+                    modifier = Modifier
+                        .size(if (variant == 2) 56.dp else 40.dp)
+                        .clip(RoundedCornerShape(8.dp)),
                 )
             }
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

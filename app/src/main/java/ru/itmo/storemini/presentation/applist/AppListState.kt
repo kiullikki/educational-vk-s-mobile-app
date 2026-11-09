@@ -1,15 +1,22 @@
 package ru.itmo.storemini.presentation.applist
 
 import androidx.compose.runtime.Immutable
-import ru.itmo.storemini.domain.appdetails.AppItem
+import ru.itmo.storemini.domain.catalog.AppSummary
 
 @Immutable
 sealed interface AppListState {
-    data object Loading : AppListState
-    data object Error : AppListState
+    val favoritesOnly: Boolean
+
+    data class Loading(
+        override val favoritesOnly: Boolean,
+    ) : AppListState
+
+    data class Error(
+        override val favoritesOnly: Boolean,
+    ) : AppListState
 
     data class Content(
-        val apps: List<AppItem>,
-        val favoritesOnly: Boolean = false,
+        val apps: List<AppSummary>,
+        override val favoritesOnly: Boolean,
     ) : AppListState
 }

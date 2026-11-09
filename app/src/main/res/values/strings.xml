@@ -5,7 +5,9 @@
     <string name="tab_all_apps">Все приложения</string>
     <string name="favorites">Избранное</string>
     <string name="favorites_empty">В избранном пока пусто</string>
+    <string name="apps_empty">Приложений пока нет</string>
     <string name="showcase_title">Витрина</string>
+    <string name="showcase_error">Не удалось загрузить витрину</string>
     <string name="install">Установить</string>
     <string name="app_details_description">Описание</string>
     <string name="app_details_read_more">Читать далее</string>

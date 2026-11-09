@@ -20,6 +20,7 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -33,6 +34,8 @@ import ru.itmo.storemini.R
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import ru.itmo.storemini.domain.appdetails.AppItem
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +43,7 @@ import kotlinx.coroutines.launch
 fun AppDetailsScreen(
     app: AppItem,
     showcaseApps: List<AppItem>,
+    events: Flow<AppDetailsEvent>,
     onFavoriteClick: (Int) -> Unit,
     onBackClick: () -> Unit,
     onShowcaseAppClick: (AppItem) -> Unit,
@@ -47,7 +51,16 @@ fun AppDetailsScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val loadError = stringResource(R.string.load_error)
     val underDevelopment = stringResource(R.string.under_development)
+
+    LaunchedEffect(Unit) {
+        events.collect { event ->
+            when (event) {
+                AppDetailsEvent.Error -> snackbarHostState.showSnackbar(loadError)
+            }
+        }
+    }
     val showUnderDevelopment: () -> Unit = {
         scope.launch { snackbarHostState.showSnackbar(underDevelopment) }
     }
@@ -163,6 +176,7 @@ private fun AppDetailsScreenPreview() {
                 sizeMb = 95.4f,
             ),
             showcaseApps = emptyList(),
+            events = emptyFlow(),
             onFavoriteClick = {},
             onBackClick = {},
             onShowcaseAppClick = {},

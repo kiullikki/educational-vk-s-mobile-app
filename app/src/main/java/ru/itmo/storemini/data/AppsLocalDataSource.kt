@@ -1,11 +1,11 @@
 package ru.itmo.storemini.data
 
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import ru.itmo.storemini.R
-import ru.itmo.storemini.domain.applist.AppRepository
-import ru.itmo.storemini.domain.appdetails.AppItem
 
 
 private const val FAKE_DELAY_MS = 300L
@@ -41,37 +41,37 @@ private val mockAllApps: List<AppItemDto> = listOf(
     AppItemDto(R.drawable.ic_tech_linux, "Linux", "Ядро, на котором живёт Android", "Открытое ядро ОС, лежащее в основе Android, серверов и встроенных систем. Разработано Линусом Торвальдсом в 1991-м и поддерживается огромным сообществом.", "Платформы", id = 26, isFavorite = true, developer = "Linux Foundation", ageRating = 0, sizeMb = 1024f),
 )
 
-class AppRepositoryImpl : AppRepository {
+@Singleton
+class AppsLocalDataSource @Inject constructor() {
     private val _apps = MutableStateFlow(mockAllApps)
 
-    override suspend fun getApps(): List<AppItem> {
+    suspend fun getApps(): List<AppItemDto> {
         delay(FAKE_DELAY_MS)
-        return _apps.value.map { it.toDomain() }
+        return _apps.value
     }
 
-    override suspend fun getFavoriteApps(): List<AppItem> {
+    suspend fun getFavoriteApps(): List<AppItemDto> {
         delay(FAKE_DELAY_MS)
-        return _apps.value.filter { it.isFavorite }.map { it.toDomain() }
+        return _apps.value.filter { it.isFavorite }
     }
 
-    override suspend fun getShowcaseApps(excludeAppId: Int): List<AppItem> {
+    suspend fun getShowcaseApps(excludeAppId: Int): List<AppItemDto> {
         delay(FAKE_DELAY_MS)
 
         return (_apps.value.filter { it.id in showcaseIds } + _apps.value)
             .distinctBy { it.id }
             .filter { it.id != excludeAppId }
             .take(9)
-            .map { it.toDomain() }
     }
 
-    override suspend fun toggleFavorite(appId: Int) {
+    suspend fun getAppById(id: Int): AppItemDto? {
+        delay(FAKE_DELAY_MS)
+        return _apps.value.find { it.id == id }
+    }
+
+    fun toggleFavorite(appId: Int) {
         _apps.update { list ->
             list.map { if (it.id == appId) it.copy(isFavorite = !it.isFavorite) else it }
         }
-    }
-
-    override suspend fun getAppById(id: Int): AppItem? {
-        delay(FAKE_DELAY_MS)
-        return _apps.value.find { it.id == id }?.toDomain()
     }
 }

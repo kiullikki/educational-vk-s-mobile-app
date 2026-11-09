@@ -1,14 +1,14 @@
-package ru.itmo.storemini.data
+package ru.itmo.storemini.domain.appdetails
 
-data class AppItemDto(
-    val iconRes: Int,
+data class AppDetails(
+    val id: String,
     val name: String,
     val description: String,
-    val fullDescription: String,
     val category: String,
-    val id: Int,
+    val iconUrl: String,
     val isFavorite: Boolean,
     val developer: String,
     val ageRating: Int,
     val sizeMb: Float,
+    val screenshotUrls: List<String>,
 )

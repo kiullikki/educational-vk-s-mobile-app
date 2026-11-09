@@ -20,17 +20,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ru.itmo.storemini.R
-import ru.itmo.storemini.domain.appdetails.AppItem
+import ru.itmo.storemini.domain.catalog.AppSummary
+import ru.itmo.storemini.presentation.AppIcon
 
 @Composable
 fun AppListItem(
-    app: AppItem,
+    app: AppSummary,
     isFavorite: Boolean,
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit,
@@ -44,13 +43,12 @@ fun AppListItem(
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            painter = painterResource(app.iconRes),
+        AppIcon(
+            iconUrl = app.iconUrl,
             contentDescription = null,
-            tint = Color.Unspecified,
             modifier = Modifier
                 .size(48.dp)
-                .padding(4.dp)
+                .clip(RoundedCornerShape(10.dp))
         )
 
         Spacer(Modifier.width(12.dp))

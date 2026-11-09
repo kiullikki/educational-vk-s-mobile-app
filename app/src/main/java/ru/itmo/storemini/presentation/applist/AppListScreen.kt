@@ -37,17 +37,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.itmo.storemini.R
-import ru.itmo.storemini.data.AppListRepositoryImpl
-import ru.itmo.storemini.data.AppsLocalDataSource
-import ru.itmo.storemini.data.FavoritesRepositoryImpl
-import ru.itmo.storemini.domain.appdetails.AppItem
+import ru.itmo.storemini.domain.applist.AppListRepository
+import ru.itmo.storemini.domain.catalog.AppSummary
+import ru.itmo.storemini.domain.favorites.FavoritesRepository
 import ru.itmo.storemini.presentation.theme.AppTheme
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun AppListScreen(
     viewModel: AppListViewModel,
-    onAppClick: (AppItem) -> Unit,
+    onAppClick: (AppSummary) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -56,13 +57,13 @@ fun AppListScreen(
 
     Box(Modifier.fillMaxSize().safeDrawingPadding()) {
         when (val currentState = state) {
-            AppListState.Loading -> {
+            is AppListState.Loading -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
 
-            AppListState.Error -> {
+            is AppListState.Error -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -129,7 +130,9 @@ fun AppListScreen(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = stringResource(R.string.favorites_empty),
+                                text = stringResource(
+                                    if (currentState.favoritesOnly) R.string.favorites_empty else R.string.apps_empty
+                                ),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -182,11 +185,17 @@ private fun ObserveEvents(
 @Composable
 private fun AppListScreenPreview() {
     AppTheme {
-        val dataSource = remember { AppsLocalDataSource() }
         AppListScreen(
             viewModel = AppListViewModel(
-                appListRepository = AppListRepositoryImpl(dataSource),
-                favoritesRepository = FavoritesRepositoryImpl(dataSource),
+                appListRepository = object : AppListRepository {
+                    override suspend fun getApps(): List<AppSummary> = emptyList()
+                },
+                favoritesRepository = object : FavoritesRepository {
+                    override val favoriteIds: StateFlow<Set<String>> = MutableStateFlow(emptySet())
+
+                    override suspend fun getFavoriteApps(): List<AppSummary> = emptyList()
+                    override fun toggleFavorite(appId: String) = Unit
+                },
             ),
             onAppClick = {},
         )

@@ -1,28 +1,27 @@
 package ru.itmo.storemini.data
 
 import javax.inject.Inject
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import ru.itmo.storemini.domain.appdetails.AppItem
+import kotlinx.coroutines.flow.StateFlow
+import ru.itmo.storemini.domain.catalog.AppSummary
 import ru.itmo.storemini.domain.favorites.FavoritesRepository
 
 class FavoritesRepositoryImpl @Inject constructor(
-    private val dataSource: AppsLocalDataSource,
+    private val api: StoreApi,
+    private val dataSource: FavoritesLocalDataSource,
 ) : FavoritesRepository {
-    private val _favoriteChanges = MutableSharedFlow<Unit>(
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST,
-    )
-    override val favoriteChanges: Flow<Unit> = _favoriteChanges.asSharedFlow()
+    override val favoriteIds: StateFlow<Set<String>> = dataSource.favoriteIds
 
-    override suspend fun getFavoriteApps(): List<AppItem> {
-        return dataSource.getFavoriteApps().map { it.toDomain() }
+    override suspend fun getFavoriteApps(): List<AppSummary> {
+        if (dataSource.getFavoriteIds().isEmpty()) return emptyList()
+
+        val catalog = api.getCatalog()
+        val favoriteIds = dataSource.getFavoriteIds()
+        return catalog
+            .filter { it.id in favoriteIds }
+            .map { it.toDomain(isFavorite = true) }
     }
 
-    override fun toggleFavorite(appId: Int) {
+    override fun toggleFavorite(appId: String) {
         dataSource.toggleFavorite(appId)
-        _favoriteChanges.tryEmit(Unit)
     }
 }

@@ -51,6 +51,9 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation(libs.coil.compose)
     ksp(libs.hilt.android.compiler)
     debugImplementation(libs.compose.ui.tooling)
 }

@@ -30,7 +30,7 @@ import ru.itmo.storemini.presentation.applist.AppListViewModel
 object AppListRoute
 
 @Serializable
-data class AppDetailsRoute(val appId: Int)
+data class AppDetailsRoute(val appId: String)
 
 @Composable
 fun AppNavigation() {
@@ -76,6 +76,7 @@ fun AppNavigation() {
                     AppDetailsScreen(
                         app = currentState.app,
                         showcaseApps = currentState.showcaseApps,
+                        showcaseError = currentState.showcaseError,
                         events = viewModel.events,
                         onFavoriteClick = viewModel::toggleFavorite,
                         onBackClick = { navController.popBackStack() },

@@ -1,7 +1,8 @@
 package ru.itmo.storemini.presentation.appdetails
 
 import androidx.compose.runtime.Immutable
-import ru.itmo.storemini.domain.appdetails.AppItem
+import ru.itmo.storemini.domain.appdetails.AppDetails
+import ru.itmo.storemini.domain.catalog.AppSummary
 
 @Immutable
 sealed interface AppDetailsState {
@@ -10,7 +11,8 @@ sealed interface AppDetailsState {
     data object NotFound : AppDetailsState
 
     data class Content(
-        val app: AppItem,
-        val showcaseApps: List<AppItem>,
+        val app: AppDetails,
+        val showcaseApps: List<AppSummary>,
+        val showcaseError: Boolean = false,
     ) : AppDetailsState
 }

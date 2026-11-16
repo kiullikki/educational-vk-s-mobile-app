@@ -10,6 +10,7 @@ fun AppCatalogItemDto.toDomain(isFavorite: Boolean): AppSummary = AppSummary(
     category = category,
     iconUrl = iconUrl,
     isFavorite = isFavorite,
+    rating = null,
 )
 
 fun AppDetailsDto.toDomain(isFavorite: Boolean): AppDetails = AppDetails(

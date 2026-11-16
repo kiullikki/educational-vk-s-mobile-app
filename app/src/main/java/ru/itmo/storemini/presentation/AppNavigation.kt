@@ -77,7 +77,9 @@ fun AppNavigation() {
                         app = currentState.app,
                         showcaseApps = currentState.showcaseApps,
                         showcaseError = currentState.showcaseError,
+                        installState = currentState.installState,
                         events = viewModel.events,
+                        onInstallClick = viewModel::onInstallClick,
                         onFavoriteClick = viewModel::toggleFavorite,
                         onBackClick = { navController.popBackStack() },
                         onShowcaseAppClick = {

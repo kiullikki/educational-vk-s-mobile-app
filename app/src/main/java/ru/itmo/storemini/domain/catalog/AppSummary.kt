@@ -7,4 +7,5 @@ data class AppSummary(
     val category: String,
     val iconUrl: String,
     val isFavorite: Boolean,
+    val rating: Float? = null,
 )

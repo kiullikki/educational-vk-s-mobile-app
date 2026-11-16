@@ -9,6 +9,8 @@
     <string name="showcase_title">Витрина</string>
     <string name="showcase_error">Не удалось загрузить витрину</string>
     <string name="install">Установить</string>
+    <string name="cancel">Отменить</string>
+    <string name="installed">Установлено</string>
     <string name="app_details_description">Описание</string>
     <string name="app_details_read_more">Читать далее</string>
     <string name="read_less">Свернуть</string>
@@ -27,4 +29,5 @@
     <string name="retry">Повторить</string>
     <string name="add_to_favorites">Добавить в избранное</string>
     <string name="remove_from_favorites">Убрать из избранного</string>
+    <string name="rating_value">★ %1$.1f</string>
 </resources>

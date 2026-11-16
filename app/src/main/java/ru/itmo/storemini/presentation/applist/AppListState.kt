@@ -18,5 +18,12 @@ sealed interface AppListState {
     data class Content(
         val apps: List<AppSummary>,
         override val favoritesOnly: Boolean,
+        val ratingLoadTimes: RatingLoadTimes = RatingLoadTimes(),
     ) : AppListState
 }
+
+@Immutable
+data class RatingLoadTimes(
+    val sequentialMs: Long? = null,
+    val parallelMs: Long? = null,
+)

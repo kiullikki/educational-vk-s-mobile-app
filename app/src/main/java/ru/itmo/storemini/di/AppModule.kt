@@ -8,6 +8,8 @@ import javax.inject.Singleton
 import ru.itmo.storemini.data.AppDetailsRepositoryImpl
 import ru.itmo.storemini.data.AppListRepositoryImpl
 import ru.itmo.storemini.data.FavoritesRepositoryImpl
+import ru.itmo.storemini.data.RatingApi
+import ru.itmo.storemini.data.RatingApiImpl
 import ru.itmo.storemini.domain.appdetails.AppDetailsRepository
 import ru.itmo.storemini.domain.applist.AppListRepository
 import ru.itmo.storemini.domain.favorites.FavoritesRepository
@@ -26,4 +28,8 @@ abstract class AppModule {
     @Binds
     @Singleton
     abstract fun bindFavoritesRepository(impl: FavoritesRepositoryImpl): FavoritesRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRatingApi(impl: RatingApiImpl): RatingApi
 }

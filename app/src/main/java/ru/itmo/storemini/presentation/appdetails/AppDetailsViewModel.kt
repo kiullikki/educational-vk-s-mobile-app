@@ -11,6 +11,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.BUFFERED
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -35,6 +36,7 @@ class AppDetailsViewModel @Inject constructor(
     val events = _events.receiveAsFlow()
 
     private var loadJob: Job? = null
+    private var installJob: Job? = null
 
     init {
         loadApp()
@@ -42,6 +44,8 @@ class AppDetailsViewModel @Inject constructor(
     }
 
     fun loadApp() {
+        installJob?.cancel()
+        installJob = null
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             _state.value = AppDetailsState.Loading
@@ -83,6 +87,35 @@ class AppDetailsViewModel @Inject constructor(
         }
     }
 
+    fun onInstallClick() {
+        val current = _state.value as? AppDetailsState.Content ?: return
+
+        if (current.installState is InstallState.Installing) {
+            installJob?.cancel()
+            installJob = null
+            updateContent { it.copy(installState = InstallState.NotInstalled) }
+        } else if (current.installState == InstallState.NotInstalled) {
+            val job = viewModelScope.launch {
+                emulateInstall()
+            }
+            installJob = job
+            job.invokeOnCompletion {
+                if (installJob === job) installJob = null
+            }
+        }
+    }
+
+    private suspend fun emulateInstall() {
+        updateContent { it.copy(installState = InstallState.Installing(progress = 0)) }
+        for (progress in 5..100 step 5) {
+            delay(150)
+            updateContent {
+                it.copy(installState = InstallState.Installing(progress))
+            }
+        }
+        updateContent { it.copy(installState = InstallState.Installed) }
+    }
+
     fun toggleFavorite(appId: String) {
         viewModelScope.launch {
             try {
@@ -102,15 +135,21 @@ class AppDetailsViewModel @Inject constructor(
     }
 
     private fun applyFavoriteIds(favoriteIds: Set<String>) {
+        updateContent { content ->
+            content.copy(
+                app = content.app.copy(isFavorite = content.app.id in favoriteIds),
+                showcaseApps = content.showcaseApps.map {
+                    it.copy(isFavorite = it.id in favoriteIds)
+                },
+            )
+        }
+    }
+
+    private fun updateContent(
+        transform: (AppDetailsState.Content) -> AppDetailsState.Content,
+    ) {
         _state.update { currentState ->
-            (currentState as? AppDetailsState.Content)?.let { content ->
-                content.copy(
-                    app = content.app.copy(isFavorite = content.app.id in favoriteIds),
-                    showcaseApps = content.showcaseApps.map {
-                        it.copy(isFavorite = it.id in favoriteIds)
-                    },
-                )
-            } ?: currentState
+            (currentState as? AppDetailsState.Content)?.let(transform) ?: currentState
         }
     }
 }

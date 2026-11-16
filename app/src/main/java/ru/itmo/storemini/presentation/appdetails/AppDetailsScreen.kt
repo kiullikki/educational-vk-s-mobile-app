@@ -45,7 +45,9 @@ fun AppDetailsScreen(
     app: AppDetails,
     showcaseApps: List<AppSummary>,
     showcaseError: Boolean,
+    installState: InstallState,
     events: Flow<AppDetailsEvent>,
+    onInstallClick: () -> Unit,
     onFavoriteClick: (String) -> Unit,
     onBackClick: () -> Unit,
     onShowcaseAppClick: (AppSummary) -> Unit,
@@ -123,7 +125,8 @@ fun AppDetailsScreen(
                     )
                     Spacer(Modifier.height(16.dp))
                     InstallButton(
-                        onClick = showUnderDevelopment,
+                        installState = installState,
+                        onClick = onInstallClick,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
@@ -180,7 +183,9 @@ private fun AppDetailsScreenPreview() {
             ),
             showcaseApps = emptyList(),
             showcaseError = false,
+            installState = InstallState.NotInstalled,
             events = emptyFlow(),
+            onInstallClick = {},
             onFavoriteClick = {},
             onBackClick = {},
             onShowcaseAppClick = {},

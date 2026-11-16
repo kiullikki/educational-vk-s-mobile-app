@@ -4,10 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlin.coroutines.coroutineContext
+import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.Channel.Factory.BUFFERED
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -49,6 +52,7 @@ class AppListViewModel @Inject constructor(
                     favoritesOnly = favoritesOnly,
                 )
                 applyFavoriteIds(favoritesRepository.favoriteIds.value)
+                loadRatings(apps, favoritesOnly)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -88,6 +92,7 @@ class AppListViewModel @Inject constructor(
                     favoritesOnly = favoritesOnly,
                 )
                 applyFavoriteIds(favoritesRepository.favoriteIds.value)
+                loadRatings(apps, favoritesOnly)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -111,6 +116,50 @@ class AppListViewModel @Inject constructor(
                     _events.send(AppListEvent.Error)
                 }
             }
+        }
+    }
+
+    private suspend fun loadRatings(apps: List<AppSummary>, favoritesOnly: Boolean) {
+        val ids = apps.map { it.id }
+        if (ids.isEmpty()) return
+
+        var sequentialRatings = emptyMap<String, Float>()
+        val sequentialTime = measureTimeMillis {
+            sequentialRatings = appListRepository.loadRatingsSequentially(ids)
+        }
+        coroutineContext.ensureActive()
+        applyRatings(sequentialRatings, ids, favoritesOnly) { it.copy(sequentialMs = sequentialTime) }
+
+        var parallelRatings = emptyMap<String, Float>()
+        val parallelTime = measureTimeMillis {
+            parallelRatings = appListRepository.loadRatingsInParallel(ids)
+        }
+        coroutineContext.ensureActive()
+        applyRatings(parallelRatings, ids, favoritesOnly) { it.copy(parallelMs = parallelTime) }
+    }
+
+    private fun applyRatings(
+        ratings: Map<String, Float>,
+        ids: List<String>,
+        favoritesOnly: Boolean,
+        updateTimes: (RatingLoadTimes) -> RatingLoadTimes,
+    ) {
+        _state.update { currentState ->
+            (currentState as? AppListState.Content)
+                ?.takeIf { content ->
+                    content.favoritesOnly == favoritesOnly &&
+                        content.apps.all { it.id in ratings } &&
+                        (favoritesOnly || content.apps.map { it.id } == ids)
+                }
+                ?.let { content ->
+                    content.copy(
+                        apps = content.apps.map {
+                            it.copy(rating = ratings.getValue(it.id))
+                        },
+                        ratingLoadTimes = updateTimes(content.ratingLoadTimes),
+                    )
+                }
+                ?: currentState
         }
     }
 
@@ -142,6 +191,7 @@ class AppListViewModel @Inject constructor(
                         ?.copy(apps = apps.withFavoriteStatus(favoritesOnly = true))
                         ?: currentState
                 }
+                loadRatings(apps, favoritesOnly = true)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

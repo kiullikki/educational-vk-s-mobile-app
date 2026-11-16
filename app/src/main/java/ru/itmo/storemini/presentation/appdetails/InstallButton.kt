@@ -11,13 +11,26 @@ import androidx.compose.ui.unit.dp
 import ru.itmo.storemini.R
 
 @Composable
-fun InstallButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun InstallButton(
+    installState: InstallState,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Button(
         onClick = onClick,
+        enabled = installState !is InstallState.Installed,
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(vertical = 12.dp),
         modifier = modifier,
     ) {
-        Text(text = stringResource(R.string.install))
+        Text(
+            text = stringResource(
+                when (installState) {
+                    InstallState.NotInstalled -> R.string.install
+                    is InstallState.Installing -> R.string.cancel
+                    InstallState.Installed -> R.string.installed
+                }
+            )
+        )
     }
 }

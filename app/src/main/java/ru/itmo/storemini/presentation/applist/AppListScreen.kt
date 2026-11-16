@@ -189,6 +189,8 @@ private fun AppListScreenPreview() {
             viewModel = AppListViewModel(
                 appListRepository = object : AppListRepository {
                     override suspend fun getApps(): List<AppSummary> = emptyList()
+                    override suspend fun loadRatingsSequentially(ids: List<String>): Map<String, Float> = emptyMap()
+                    override suspend fun loadRatingsInParallel(ids: List<String>): Map<String, Float> = emptyMap()
                 },
                 favoritesRepository = object : FavoritesRepository {
                     override val favoriteIds: StateFlow<Set<String>> = MutableStateFlow(emptySet())

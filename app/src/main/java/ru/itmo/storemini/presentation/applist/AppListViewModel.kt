@@ -19,12 +19,20 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.itmo.storemini.domain.applist.AppListRepository
 import ru.itmo.storemini.domain.catalog.AppSummary
+import ru.itmo.storemini.domain.catalog.ApplyFavoriteStatusUseCase
+import ru.itmo.storemini.domain.catalog.ApplyRatingsUseCase
+import ru.itmo.storemini.domain.catalog.GetAppsUseCase
+import ru.itmo.storemini.domain.catalog.ShouldReloadFavoritesUseCase
 import ru.itmo.storemini.domain.favorites.FavoritesRepository
 
 @HiltViewModel
 class AppListViewModel @Inject constructor(
     private val appListRepository: AppListRepository,
     private val favoritesRepository: FavoritesRepository,
+    private val getAppsUseCase: GetAppsUseCase,
+    private val applyFavoriteStatusUseCase: ApplyFavoriteStatusUseCase,
+    private val applyRatingsUseCase: ApplyRatingsUseCase,
+    private val shouldReloadFavoritesUseCase: ShouldReloadFavoritesUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<AppListState>(AppListState.Loading(favoritesOnly = false))
@@ -34,6 +42,7 @@ class AppListViewModel @Inject constructor(
     val events = _events.receiveAsFlow()
 
     private var loadJob: Job? = null
+    private var requestedFavoriteIds: Set<String> = emptySet()
 
     init {
         loadApps()
@@ -46,13 +55,19 @@ class AppListViewModel @Inject constructor(
         loadJob = viewModelScope.launch {
             _state.value = AppListState.Loading(favoritesOnly)
             try {
-                val apps = getApps(favoritesOnly)
+                if (favoritesOnly) requestedFavoriteIds = favoritesRepository.favoriteIds.value
+                val apps = getAppsUseCase(favoritesOnly)
+                val filteredApps = applyFavoriteStatusUseCase(
+                    apps = apps,
+                    favoriteIds = favoritesRepository.favoriteIds.value,
+                    favoritesOnly = favoritesOnly,
+                )
                 _state.value = AppListState.Content(
-                    apps = apps.withFavoriteStatus(favoritesOnly),
+                    apps = filteredApps,
                     favoritesOnly = favoritesOnly,
                 )
                 applyFavoriteIds(favoritesRepository.favoriteIds.value)
-                loadRatings(apps, favoritesOnly)
+                loadRatings(filteredApps, favoritesOnly)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -86,13 +101,19 @@ class AppListViewModel @Inject constructor(
         loadJob = viewModelScope.launch {
             _state.value = AppListState.Loading(favoritesOnly)
             try {
-                val apps = getApps(favoritesOnly)
+                if (favoritesOnly) requestedFavoriteIds = favoritesRepository.favoriteIds.value
+                val apps = getAppsUseCase(favoritesOnly)
+                val filteredApps = applyFavoriteStatusUseCase(
+                    apps = apps,
+                    favoriteIds = favoritesRepository.favoriteIds.value,
+                    favoritesOnly = favoritesOnly,
+                )
                 _state.value = AppListState.Content(
-                    apps = apps.withFavoriteStatus(favoritesOnly),
+                    apps = filteredApps,
                     favoritesOnly = favoritesOnly,
                 )
                 applyFavoriteIds(favoritesRepository.favoriteIds.value)
-                loadRatings(apps, favoritesOnly)
+                loadRatings(filteredApps, favoritesOnly)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -146,18 +167,19 @@ class AppListViewModel @Inject constructor(
     ) {
         _state.update { currentState ->
             (currentState as? AppListState.Content)
-                ?.takeIf { content ->
-                    content.favoritesOnly == favoritesOnly &&
-                        content.apps.all { it.id in ratings } &&
-                        (favoritesOnly || content.apps.map { it.id } == ids)
-                }
                 ?.let { content ->
-                    content.copy(
-                        apps = content.apps.map {
-                            it.copy(rating = ratings.getValue(it.id))
-                        },
-                        ratingLoadTimes = updateTimes(content.ratingLoadTimes),
-                    )
+                    applyRatingsUseCase(
+                        apps = content.apps,
+                        ratings = ratings,
+                        requestedIds = ids,
+                        requestedFavoritesOnly = favoritesOnly,
+                        currentFavoritesOnly = content.favoritesOnly,
+                    )?.let { ratedApps ->
+                        content.copy(
+                            apps = ratedApps,
+                            ratingLoadTimes = updateTimes(content.ratingLoadTimes),
+                        )
+                    } ?: content
                 }
                 ?: currentState
         }
@@ -166,16 +188,29 @@ class AppListViewModel @Inject constructor(
     private fun applyFavoriteIds(favoriteIds: Set<String>) {
         val content = _state.value as? AppListState.Content ?: return
 
-        if (content.favoritesOnly && favoriteIds.any { id -> content.apps.none { it.id == id } }) {
+        if (shouldReloadFavoritesUseCase(
+                apps = content.apps,
+                favoriteIds = favoriteIds,
+                requestedFavoriteIds = requestedFavoriteIds,
+                favoritesOnly = content.favoritesOnly,
+            )
+        ) {
             reloadFavorites()
             return
         }
 
-        val apps = content.apps.withFavoriteStatus(content.favoritesOnly, favoriteIds)
         _state.update { currentState ->
             (currentState as? AppListState.Content)
                 ?.takeIf { it.favoritesOnly == content.favoritesOnly }
-                ?.copy(apps = apps)
+                ?.let { latestContent ->
+                    latestContent.copy(
+                        apps = applyFavoriteStatusUseCase(
+                            apps = latestContent.apps,
+                            favoriteIds = favoriteIds,
+                            favoritesOnly = latestContent.favoritesOnly,
+                        )
+                    )
+                }
                 ?: currentState
         }
     }
@@ -184,35 +219,25 @@ class AppListViewModel @Inject constructor(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             try {
-                val apps = favoritesRepository.getFavoriteApps()
+                requestedFavoriteIds = favoritesRepository.favoriteIds.value
+                val apps = getAppsUseCase(favoritesOnly = true)
+                val filteredApps = applyFavoriteStatusUseCase(
+                    apps = apps,
+                    favoriteIds = favoritesRepository.favoriteIds.value,
+                    favoritesOnly = true,
+                )
                 _state.update { currentState ->
                     (currentState as? AppListState.Content)
                         ?.takeIf { it.favoritesOnly }
-                        ?.copy(apps = apps.withFavoriteStatus(favoritesOnly = true))
+                        ?.copy(apps = filteredApps)
                         ?: currentState
                 }
-                loadRatings(apps, favoritesOnly = true)
+                loadRatings(filteredApps, favoritesOnly = true)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 _events.send(AppListEvent.Error)
             }
         }
-    }
-
-    private suspend fun getApps(favoritesOnly: Boolean): List<AppSummary> {
-        return if (favoritesOnly) {
-            favoritesRepository.getFavoriteApps()
-        } else {
-            appListRepository.getApps()
-        }
-    }
-
-    private fun List<AppSummary>.withFavoriteStatus(
-        favoritesOnly: Boolean,
-        favoriteIds: Set<String> = favoritesRepository.favoriteIds.value,
-    ): List<AppSummary> {
-        return map { it.copy(isFavorite = it.id in favoriteIds) }
-            .filter { !favoritesOnly || it.isFavorite }
     }
 }

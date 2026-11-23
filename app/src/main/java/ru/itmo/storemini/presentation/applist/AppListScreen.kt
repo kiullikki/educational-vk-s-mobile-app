@@ -39,6 +39,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.itmo.storemini.R
 import ru.itmo.storemini.domain.applist.AppListRepository
 import ru.itmo.storemini.domain.catalog.AppSummary
+import ru.itmo.storemini.domain.catalog.ApplyFavoriteStatusUseCase
+import ru.itmo.storemini.domain.catalog.ApplyRatingsUseCase
+import ru.itmo.storemini.domain.catalog.GetAppsUseCase
+import ru.itmo.storemini.domain.catalog.ShouldReloadFavoritesUseCase
 import ru.itmo.storemini.domain.favorites.FavoritesRepository
 import ru.itmo.storemini.presentation.theme.AppTheme
 import kotlinx.coroutines.flow.Flow
@@ -184,20 +188,27 @@ private fun ObserveEvents(
 @Preview(showBackground = true)
 @Composable
 private fun AppListScreenPreview() {
+    val appListRepository = object : AppListRepository {
+        override suspend fun getApps(): List<AppSummary> = emptyList()
+        override suspend fun loadRatingsSequentially(ids: List<String>): Map<String, Float> = emptyMap()
+        override suspend fun loadRatingsInParallel(ids: List<String>): Map<String, Float> = emptyMap()
+    }
+    val favoritesRepository = object : FavoritesRepository {
+        override val favoriteIds: StateFlow<Set<String>> = MutableStateFlow(emptySet())
+
+        override suspend fun getFavoriteApps(): List<AppSummary> = emptyList()
+        override fun toggleFavorite(appId: String) = Unit
+    }
+
     AppTheme {
         AppListScreen(
             viewModel = AppListViewModel(
-                appListRepository = object : AppListRepository {
-                    override suspend fun getApps(): List<AppSummary> = emptyList()
-                    override suspend fun loadRatingsSequentially(ids: List<String>): Map<String, Float> = emptyMap()
-                    override suspend fun loadRatingsInParallel(ids: List<String>): Map<String, Float> = emptyMap()
-                },
-                favoritesRepository = object : FavoritesRepository {
-                    override val favoriteIds: StateFlow<Set<String>> = MutableStateFlow(emptySet())
-
-                    override suspend fun getFavoriteApps(): List<AppSummary> = emptyList()
-                    override fun toggleFavorite(appId: String) = Unit
-                },
+                appListRepository = appListRepository,
+                favoritesRepository = favoritesRepository,
+                getAppsUseCase = GetAppsUseCase(appListRepository, favoritesRepository),
+                applyFavoriteStatusUseCase = ApplyFavoriteStatusUseCase(),
+                applyRatingsUseCase = ApplyRatingsUseCase(),
+                shouldReloadFavoritesUseCase = ShouldReloadFavoritesUseCase(),
             ),
             onAppClick = {},
         )

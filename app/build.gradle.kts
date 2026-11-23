@@ -56,4 +56,6 @@ dependencies {
     implementation(libs.coil.compose)
     ksp(libs.hilt.android.compiler)
     debugImplementation(libs.compose.ui.tooling)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

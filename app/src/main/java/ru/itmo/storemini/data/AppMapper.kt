@@ -25,3 +25,23 @@ fun AppDetailsDto.toDomain(isFavorite: Boolean): AppDetails = AppDetails(
     sizeMb = size,
     screenshotUrls = screenshotUrlList,
 )
+
+fun AppSummary.toDto(): AppCatalogItemDto = AppCatalogItemDto(
+    id = id,
+    name = name,
+    description = description,
+    category = category,
+    iconUrl = iconUrl,
+)
+
+fun AppDetails.toDto(): AppDetailsDto = AppDetailsDto(
+    id = id,
+    name = name,
+    developer = developer,
+    category = category,
+    ageRating = ageRating,
+    size = sizeMb,
+    iconUrl = iconUrl,
+    screenshotUrlList = screenshotUrls,
+    description = description,
+)
